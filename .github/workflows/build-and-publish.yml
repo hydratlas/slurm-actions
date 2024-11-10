@@ -28,3 +28,5 @@ jobs:
       with:
         name: my-package
         path: output/my-package.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
