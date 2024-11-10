@@ -1,0 +1,24 @@
+name: Build and Publish to GitHub Packages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Build the project
+      run: |
+        mkdir -p output
+        echo "aaa" > output/test.txt
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload to GitHub Packages
+      uses: actions/upload-artifact@v3
+      with:
+        name: my-package
+        path: output/test.txt
