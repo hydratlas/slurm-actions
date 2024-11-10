@@ -13,7 +13,7 @@ jobs:
     - name: Build the project
       run: |
         mkdir -p output
-        echo "aaa" > output/test.txt
+        echo "bbb" > output/test.txt
 
     - name: Publish to GitHub Packages
       run: |
