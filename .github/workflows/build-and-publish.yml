@@ -1,4 +1,4 @@
-name: Build and Publish to GitHub Packages
+name: Run Tests and Publish to GitHub Packages
 
 on:
   push:
@@ -6,27 +6,27 @@ on:
       - main
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Build the project
-      run: |
-        mkdir -p output
-        echo "bbb" > output/test.txt
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
+    # テスト実行と結果の保存
+    - name: Run tests
+      run: |
+        mkdir -p test-results
+        echo "Test output" > test-results/results.txt
+
+    # テスト結果を tar アーカイブにまとめる
+    - name: Archive test results
+      run: |
+        tar -czvf test-results.tar.gz -C test-results .
+
+    # GitHub Packages にアーカイブをアップロード
     - name: Publish to GitHub Packages
       run: |
-        cd output
-        # ファイルを tar でまとめてアップロード用のアーカイブにする場合
-        tar -czvf my-package.tar.gz *
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload to GitHub Packages
-      uses: actions/upload-artifact@v3
-      with:
-        name: my-package
-        path: output/my-package.tar.gz
+        gh release create test-results "test-results.tar.gz" -t "Test Results"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
