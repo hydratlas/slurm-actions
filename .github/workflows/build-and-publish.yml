@@ -1,4 +1,4 @@
-name: Run Tests and Publish to GitHub Packages
+name: Upload Dummy Deb to GitHub Packages
 
 on:
   push:
@@ -6,27 +6,40 @@ on:
       - main
 
 jobs:
-  test:
+  build-and-publish:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # テスト実行と結果の保存
-    - name: Run tests
+    # ダミーの .deb ファイルを作成
+    - name: Create dummy .deb package
       run: |
-        mkdir -p test-results
-        echo "Test output" > test-results/results.txt
+        # 必要なディレクトリ構成を作成
+        mkdir -p dummy-package/DEBIAN
+        mkdir -p dummy-package/usr/local/bin
 
-    # テスト結果を tar アーカイブにまとめる
-    - name: Archive test results
-      run: |
-        tar -czvf test-results.tar.gz -C test-results .
+        # コントロールファイルを作成
+        echo "Package: dummy-package" > dummy-package/DEBIAN/control
+        echo "Version: 1.0.0" >> dummy-package/DEBIAN/control
+        echo "Section: base" >> dummy-package/DEBIAN/control
+        echo "Priority: optional" >> dummy-package/DEBIAN/control
+        echo "Architecture: all" >> dummy-package/DEBIAN/control
+        echo "Maintainer: Your Name <you@example.com>" >> dummy-package/DEBIAN/control
+        echo "Description: A dummy package for testing." >> dummy-package/DEBIAN/control
 
-    # GitHub Packages にアーカイブをアップロード
-    - name: Publish to GitHub Packages
-      run: |
-        gh release create test-results "test-results.tar.gz" -t "Test Results"
+        # ダミーの実行可能ファイルを作成
+        echo '#!/bin/bash' > dummy-package/usr/local/bin/dummy
+        echo 'echo "This is a dummy package."' >> dummy-package/usr/local/bin/dummy
+        chmod +x dummy-package/usr/local/bin/dummy
+
+        # .deb パッケージの作成
+        dpkg-deb --build dummy-package
+
+    # GitHub Packages に .deb をアップロード
+    - name: Upload .deb to GitHub Packages
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release create v1.0.0 dummy-package.deb -t "Dummy Package v1.0.0" -n "A dummy .deb package for testing"
